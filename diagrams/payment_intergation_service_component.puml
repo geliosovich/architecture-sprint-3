@@ -1,0 +1,32 @@
+@startuml
+title Сервис интеграции с платежными системами
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary("payment_integration_service","Сервис интеграции с платежными системами"){
+    Component(controller, "REST API контроллер", "SpringMVC")
+    Component(sber_gw, "Шлюз интеграции с системой Сбербанка")
+    Component(tbank_gw, "Шлюз интеграции с системой Т-банка")
+    ComponentDb(db, "БД", PostgreSQL)
+}
+
+Container(public_api_gw, "API шлюз публичных сервисов", "Nginx")
+Container(private_api_gw, "API шлюз внутренних сервисов", "Nginx")
+System_Ext(payments_system, "Платежные системы", "Обслуживание платежей от пользователя")
+ContainerQueue(log_events, "", "Kafka", "Очереди для всех внутренних событий системы")
+
+Rel(controller, db, "Хранение постоянных данных")
+Rel(controller, private_api_gw, "", JSON/REST)
+Rel(private_api_gw, sber_gw, "", JSON/REST)
+Rel(private_api_gw, tbank_gw, "", JSON/REST)
+Rel(sber_gw, db, "Хранение постоянных данных")
+Rel(tbank_gw, db, "Хранение постоянных данных")
+
+Rel_L(controller, log_events,"Сбор логов и метрик")
+Rel_L(sber_gw, log_events,"Сбор логов и метрик")
+Rel_L(tbank_gw, log_events,"Сбор логов и метрик")
+
+Rel_D(public_api_gw, controller, "JSON/REST", "Мониторинг и управление платежами")
+BiRel_U(payments_system, sber_gw, JSON/REST ,"Интеграция с системой оплаты")
+BiRel_U(payments_system, tbank_gw, JSON/REST ,"Интеграция с системой оплаты")
+
+@enduml

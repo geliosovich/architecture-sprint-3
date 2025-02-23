@@ -1,0 +1,26 @@
+@startuml
+title Сервис потоковой передачи
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary("video_stream_service","Сервис потоковой передачи"){
+    Component(controller, "REST API контроллер", "SpringMVC")
+    Component(webrtc_controller, "WEBRTC контроллер", "?")
+    ComponentDb(db, "БД", PostgreSQL)
+}
+
+Container(public_api_gw, "API шлюз публичных сервисов", "Nginx")
+Container(private_api_gw, "API шлюз внутренних сервисов", "Nginx")
+ContainerQueue(log_events, "", "Kafka", "Очереди для всех внутренних событий системы")
+Container(hw_intergation_service, "Сервис интеграции с устройствами", "Spring/Kotlin", "Управление подключениями устройств")
+
+
+Rel_D(webrtc_controller, hw_intergation_service, WEBRTC, "Потоковая передача видео")
+'Rel(video_stream_service, smart_home_devices, WebRTC,"Передача потоковых данных")
+Rel(private_api_gw, controller, "", JSON/REST)
+Rel(public_api_gw, controller, "", JSON/REST)
+Rel(public_api_gw, webrtc_controller, "", WEBRTC)
+Rel(private_api_gw, webrtc_controller, "", JSON/REST)
+Rel(controller, db, "", JDBC)
+Rel_R(controller, log_events, "Сбор логов и метрик", Syslog/Prometheus)
+Rel_R(webrtc_controller, log_events, "Сбор логов и метрик", Syslog/Prometheus)
+@enduml

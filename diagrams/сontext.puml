@@ -1,0 +1,33 @@
+@startuml Context
+title Контекстная диаграмма разрабатываемых систем
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "Пользователь", "Пользователь, управляющий умным домом")
+Person(admin, "Администратор", "Администратор системы, управляющий конфигурацией системы")
+Person(support, "Дежурный", "Специалист службы эксплуатации, следящий за работоспособностью системы")
+
+System(smart_home_controller, "Система управления Умный дом", "Система управления умными домом")
+
+System_Ext(smart_home_devices, "Устройства Умный дом", "Управление устройствами пользователя: датчики, объекты управления")
+System_Ext(payments_system, "Платежные системы", "Обслуживание платежей от пользователя")
+System_Ext(notification_system, "Система уведомлений", "Доставка уведомлений пользователю, администратору, дежурному через внешние сервисы")
+System_Ext(log_system, "Система обработки логов и метрик", "Сбор логов и статистики и систематизация данных")
+
+Rel(user, smart_home_controller, "Установка желаемых параметров")
+Rel(smart_home_controller, user, "Просмотр данных с Умного Дома")
+Rel_D(admin, smart_home_controller, "Управление настройками, конфигурацией")
+Rel_U(smart_home_controller, admin, "Просмотр конфигурации и текущего состояния")
+Rel_D(support,smart_home_controller,"Коррекция состояния системы")
+Rel_U(smart_home_controller, support, "Просмотр текущего состояния")
+Rel_D(smart_home_controller, smart_home_devices, "Установка заданного состояние системы")
+Rel(smart_home_devices, smart_home_controller, "Обратная связь по состоянию")
+Rel_R(smart_home_controller, log_system, "Логи и метрики")
+BiRel_R(payments_system, smart_home_controller, "Интеграция с системой оплаты")
+Rel(smart_home_controller, notification_system, "Отправка уведомлений")
+Rel_U(log_system, notification_system, "Отправка уведомлений")
+Rel_L(notification_system, user, "Отправка уведомлений")
+Rel(notification_system, admin, "Отправка уведомлений")
+Rel(notification_system, support, "Отправка уведомлений")
+BiRel(user, payments_system, "Оплата услуг")
+@enduml

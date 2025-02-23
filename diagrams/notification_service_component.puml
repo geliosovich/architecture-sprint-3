@@ -1,0 +1,20 @@
+@startuml
+title Внутренний сервис уведомлений
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary("notification_service","Внутренний сервис уведомлений"){
+    Component(controller, "REST API контроллер", "SpringMVC")
+    Component(notification_scheduler, "Система очередей уведомлений", "Spring/Scheduling")
+    ComponentDb(db, "БД уведомлений пользователей", PostgreSQL)
+}
+
+Container(public_api_gw, "API шлюз", "Nginx")
+Container(private_api_gw, "API шлюз внутренних сервисов", "Nginx")
+
+Rel(public_api_gw, controller, "Доступ к уведомлениям из приложений", JSON/REST)
+Rel(controller, notification_scheduler, "")
+Rel(controller, db, "", JDBC)
+Rel(notification_scheduler, db, "", JDBC)
+Rel(private_api_gw, controller, JSON/REST,"Прием уведомлений из систем")
+@enduml
+
