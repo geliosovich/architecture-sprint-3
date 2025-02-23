@@ -1,0 +1,81 @@
+@startuml
+title Диаграмма ER
+
+entity User {
+    * id : Number
+    --
+    * name: string
+    * role_id : Number
+    * balance: number
+}
+
+
+entity UserRole{
+    * id: Number
+    --
+    code: string
+}
+
+entity Device {
+    * id : Number
+    --
+    name: varchar
+    * type_id: Number
+    * location_id: Number
+    properties: json
+    status: json
+}
+
+entity Location {
+    * id : Number
+    --
+    address: string
+}
+
+entity DevicesGroup {
+    * id : Number
+    --
+    guid: UUID
+    * name: varchar
+
+}
+
+entity DeviceType {
+    * id : Number
+    --
+    * type: string
+    * name: string
+    * commands:
+}
+
+entity DeviceCommand {
+    * id : Number
+    --
+    code: string
+}
+
+entity AllowedCommands {
+    * id : Number
+    --
+    * device_id: Number
+    * command_id: Number
+}
+
+entity DeviceCommandResponse {
+    * id : number
+    --
+    * time : timestamp
+    * device_id : UUID
+    data: json
+}
+
+User ..o{ DevicesGroup: own
+DevicesGroup }o.. Device: contain
+Device }o.. DeviceType: type of
+Device }o.. Location: type of
+Device ..o{ DeviceCommandResponse: produce
+User ..o{ UserRole: contain
+Device ||..o AllowedCommands: contain
+AllowedCommands ||..o{ DeviceCommand
+
+@enduml

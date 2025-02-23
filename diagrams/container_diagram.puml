@@ -1,0 +1,64 @@
+@startuml
+title Контейнерная диаграмма системы управления Умный дом
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+
+Person(user, "Пользователь", "Конечный пользователь, управляющий умным домом")
+Person(admin, "Администратор", "Администратор системы, управляющий конфигурацией системы")
+Person(support, "Дежурный", "Специалист службы эксплуатации, следящий за работоспособностью системы")
+
+System_Boundary(smart_home_controller, "Система управления Умный дом", "Система управления умными домом") {
+    Container(mobile_app, "Мобильное приложений", "React Native", "Кроссплатформенной мобильное приложение")
+    Container(web_app, "Веб-приложение пользователя", "React.js", "Веб-приложение")
+    Container(admin_web_app, "Веб-приложение администратора", "React.js", "Веб-приложение администратора и дежурного")
+    Container(video_stream_service, "Сервис потоковой передачи", "Micronaut/Kotlin", "Передача видео с устройств до пользователя")
+    Container(user_service, "Сервис управления пользователями и доступом", "Spring/Kotlin", "Управление пользователями")
+    Container(payment_integration_service, "Сервис интеграции с платежными системами", "Spring/Kotlin", "Управление платежами")
+    Container(public_api_gw, "API шлюз", "Nginx")
+    Container(private_api_gw, "API шлюз внутренних сервисов", "Nginx")
+    Container(hw_intergation_service, "Сервис интеграции с устройствами", "Spring/Kotlin", "Управление подключениями устройств")
+    Container(notification_service, "Внутренний сервис уведомлений", "Spring/Kotlin", "Маршрутизация уведомлений пользователей")
+    ContainerQueue(log_events, "", "Kafka", "Очереди для всех внутренних событий системы")
+}
+
+System_Ext(smart_home_devices, "Устройства Умный дом", "Управление устройствами пользователя: датчики, объекты управления")
+System_Ext(payments_system, "Платежные системы", "Обслуживание платежей от пользователя")
+System_Ext(notification_system, "Система уведомлений", "Доставка уведомлений пользователю, администратору, дежурному через внешние сервисы")
+System_Ext(log_system, "Система обработки логов и метрик", "Сбор логов и статистики и систематизация данных")
+
+
+Rel_D(mobile_app, public_api_gw, "JSON/REST")
+Rel_D(web_app, public_api_gw, "JSON/REST")
+Rel_D(admin_web_app, user_service, "JSON/REST", "Управление пользователями системы ")
+Rel_D(admin_web_app, payment_integration_service, "JSON/REST", "Мониторинг и управление платежами")
+Rel_D(admin_web_app, hw_intergation_service, "JSON/REST", "Мониторинг и управление ")
+Rel_D(admin_web_app, public_api_gw, "JSON/REST")
+BiRel_D(user, mobile_app, "")
+BiRel_D(user, web_app, "")
+BiRel_D(admin, admin_web_app, "")
+BiRel_D(support, admin_web_app, "")
+Rel(public_api_gw, log_events, Syslog/Prometheus, "Логи и метрики")
+Rel(hw_intergation_service, log_events, Syslog/Prometheus, "Логи и метрики")
+Rel(user_service, log_events, Syslog/Prometheus, "Логи и метрики")
+Rel(payment_integration_service, user_service, JSON/REST, "Данные пользователя для платежей")
+BiRel(public_api_gw, user_service, JSON/REST,"Управление данными пользователя")
+Rel(public_api_gw, video_stream_service, WebRTC,"Передача потоковых данных")
+Rel(public_api_gw, hw_intergation_service, JSON/RЕST, "Установка состояния и просмотр")
+Rel(public_api_gw, notification_service, JSON/REST, "Получение уведомлений для пользователя")
+Rel(public_api_gw, private_api_gw, JSON/REST, "Проксирование API")
+Rel(private_api_gw, video_stream_service, WebRTC,"Передача потоковых данных")
+Rel(private_api_gw, hw_intergation_service, JSON/RЕST, "Установка состояния и просмотр")
+Rel(private_api_gw, notification_service, JSON/REST, "Получение уведомлений для пользователя")
+
+Rel(video_stream_service, hw_intergation_service, JSON/REST, "Команды управления потоковыми устройствами")
+'Rel(video_stream_service, smart_home_devices, WebRTC,"Передача потоковых данных")
+Rel(log_system,log_events, Syslog/Prometheus, "Сбор логов и метрик")
+Rel(hw_intergation_service, smart_home_devices, RPC,"Установка заданного состояние системы")
+Rel(smart_home_devices, hw_intergation_service, RPC, "Данные состояния устройств и значения датчиков")
+BiRel(payments_system, payment_integration_service, JSON/REST ,"Интеграция с системой оплаты")
+Rel(notification_system, notification_service, JSON/REST,"Отправка уведомлений через приложения")
+
+'Lay_D(smart_home_controller, smart_home_devices)
+'Lay_L(payments_system, smart_home_controller)
+@enduml

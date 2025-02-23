@@ -1,0 +1,27 @@
+@startuml
+title Сервис управления данными пользователя
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary("user_service","Сервис управления данными пользователя"){
+    Component(controller, "REST API контроллер", "SpringMVC")
+    Component(auth, "Сервис авторизации/аутентификации", "SpringMVC")
+    Component(access_control, "Сервис проверки прав доступа", "SpringMVC")
+    ComponentDb(db, "БД", PostgreSQL)
+}
+
+Container(public_api_gw, "API шлюз публичных сервисов", "Nginx")
+Container(private_api_gw, "API шлюз внутренних сервисов", "Nginx")
+ContainerQueue(log_events, "", "Kafka", "Очереди для всех внутренних событий системы")
+
+Rel(private_api_gw, controller, "")
+Rel(public_api_gw, controller, "")
+Rel(public_api_gw, access_control, "")
+Rel(public_api_gw, auth, "")
+Rel(private_api_gw, access_control, "")
+Rel(controller, db, "")
+Rel(auth, db, "")
+Rel(access_control, db, "")
+Rel(access_control, log_events, "")
+Rel(controller, log_events, "")
+Rel(auth, log_events, "")
+@enduml

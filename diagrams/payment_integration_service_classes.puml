@@ -1,0 +1,58 @@
+@startuml
+
+class PaymentController {
+    + pay(id: PaymentData): PaymentStatus
+    + payStatus(id: PaymentId): PaymentStatus
+    + paymentHistory(id: UserId): List<PaymentStatus>
+}
+
+interface PaymentService {
+    + pay(id: PaymentData): PaymentStatus
+    + payStatus(id: PaymentId): PaymentStatus
+}
+
+class PaymentStatus {
+    + code: String
+    + transaction: Transaction
+}
+
+class PaymentData {
+    + amount: Decimal
+}
+
+class SberPaymentService {
+    + pay(id: PaymentData): PaymentStatus
+    + payStatus(id: PaymentId): PaymentStatus
+}
+
+class TbankPaymentService {
+    + pay(id: PaymentData): PaymentStatus
+    + payStatus(id: PaymentId): PaymentStatus
+}
+
+interface PaymentDataRepository {
+
+}
+
+interface PaymentStatusRepository {
+
+}
+
+class HistoryService {
+}
+
+
+SberPaymentService ..|> PaymentService
+TbankPaymentService ..|> PaymentService
+PaymentController <.. PaymentService
+PaymentService --> PaymentStatus
+PaymentService --> PaymentData
+
+PaymentDataRepository ..|> CrudRepository
+PaymentStatusRepository ..|> CrudRepository
+HistoryService --> PaymentDataRepository
+HistoryService --> PaymentStatusRepository
+PaymentController --> HistoryService
+
+
+@enduml

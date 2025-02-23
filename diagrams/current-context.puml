@@ -1,0 +1,16 @@
+@startuml сontext-ASIS
+title Контекстная диаграмма монолита
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+
+Person(user, "Customer", "Пользователь системы")
+
+System(heating_controller, "Smart Home Controller", "Система управления и мониторинга отопления")
+System_Ext(home_heating_sys, "Heating System", "Система отопления дома")
+
+Rel(user, heating_controller, "Управление отоплением")
+Rel(heating_controller, user, "Наблюдение за отоплением")
+Rel(heating_controller, home_heating_sys, "Установка параметров отопления")
+Rel(home_heating_sys,heating_controller, "Значение датчиков отопления")
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml
+title Сервис интеграции с устройствами Умный Дом
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+Container_Boundary("hw_intergation_service","Сервис интеграции с устройствами"){
+    Component(controller, "REST API контроллер", "SpringMVC")
+    Component(rpc_gw, "Шлюз доступа к устройствам", "Spring/gRPC")
+    Component(scheduler, "Асинхронные задачи", "Spring/Scheduler")
+    ComponentDb(db, "БД", PostgreSQL)
+    ComponentDb(cache, "Кеш", Redis)
+
+}
+
+Container(public_api_gw, "API шлюз", "Nginx")
+ContainerQueue(log_events, "", "Kafka", "Очереди для всех внутренних событий системы")
+System_Ext(smart_home_devices, "Устройства Умный дом", "Управление устройствами пользователя: датчики, объекты управления")
+
+Rel(controller, db, "Доступ к данным")
+Rel_R(controller, log_events, "Сбор логов и метрик")
+Rel_U(rpc_gw, db,"Хранение постоянных данных", JDBC)
+Rel_R(rpc_gw, log_events, "Сбор логов и метрик")
+Rel(scheduler, db, "Хранение постоянных данных", JDBC)
+Rel(scheduler, rpc_gw, "Отправка команд устройствам")
+Rel_R(scheduler, log_events, "Сбор логов и метрик")
+Rel(scheduler, cache, "Хранение временных данных", JSON/RESP)
+Rel(controller, cache, "Хранение временных данных", JSON/RESP)
+Rel(controller, scheduler, "Запуск задач")
+
+Rel(public_api_gw, controller, JSON/RЕST, "Установка состояния и просмотр")
+'Rel_D(admin_web_app, hw_intergation_service, "JSON/REST", "Мониторинг и управление ")
+Rel_D(rpc_gw, smart_home_devices, "Установка заданного состояние системы", protobuf/gRPC)
+Rel_U(smart_home_devices, rpc_gw, "Данные состояния устройств и значения датчиков", protobuf/gRPC)
+
+
+@enduml
